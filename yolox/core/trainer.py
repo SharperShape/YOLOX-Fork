@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # Copyright (c) Megvii, Inc. and its affiliates.
 
-import datetime
-import os
-import time
 from loguru import logger
 
 import torch
@@ -31,6 +28,11 @@ from yolox.utils import (
     setup_logger,
     synchronize
 )
+
+import datetime
+import json
+import os
+import time
 
 
 class Trainer:
@@ -185,6 +187,8 @@ class Trainer:
                     self.exp,
                     self.evaluator.dataloader.dataset
                 )
+            elif self.args.logger == "valohai":
+                print("Using print logger")
             else:
                 raise ValueError("logger must be either 'tensorboard' or 'wandb'")
 
@@ -270,6 +274,17 @@ class Trainer:
                         "train/lr": self.meter["lr"].latest
                     })
                     self.wandb_logger.log_metrics(metrics, step=self.progress_in_iter)
+            else:
+                metrics = {
+                    "EpochIter": f"{self.epoch + 1 + self.iter / self.max_iter}",
+                    "lr": self.meter["lr"].latest,
+                    "iter": self.iter,
+                }
+
+                for k, v in loss_meter.items():
+                    v_item = v.latest if isinstance(v.latest, float) else v.latest.item()
+                    metrics.update({k: v_item})
+                print(json.dumps(metrics))
 
             self.meter.clear_meters()
 
@@ -345,6 +360,14 @@ class Trainer:
                     "train/epoch": self.epoch + 1,
                 })
                 self.wandb_logger.log_images(predictions)
+            else:
+                metrics = {
+                    "Epoch": self.epoch + 1,
+                    "total_lr": self.meter["lr"].total,
+                    "AP50": ap50,
+                    "AP50_95": ap50_95,
+                }
+                print(json.dumps(metrics))
             logger.info("\n" + summary)
         synchronize()
 
@@ -382,3 +405,10 @@ class Trainer:
                         "curr_ap": ap
                     }
                 )
+            else:
+                metrics = {
+                    "Epoch": self.epoch + 1,
+                    "BestAP": self.best_ap,
+                    "CurrentAP": ap,
+                }
+                print(json.dumps(metrics))
