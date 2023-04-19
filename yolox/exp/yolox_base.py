@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 # Copyright (c) Megvii Inc. All rights reserved.
 
-import os
-import random
-
 import torch
 import torch.distributed as dist
 import torch.nn as nn
+
+import os
+import random
 
 from .base_exp import BaseExp
 
@@ -109,7 +109,7 @@ class Exp(BaseExp):
         self.nmsthre = 0.65
 
     def get_model(self):
-        from yolox.models import YOLOX, YOLOPAFPN, YOLOXHead
+        from yolox.models import YOLOPAFPN, YOLOX, YOLOXHead
 
         def init_yolo(M):
             for m in M.modules():
@@ -163,12 +163,12 @@ class Exp(BaseExp):
                 None: Do not use cache, in this case cache_data is also None.
         """
         from yolox.data import (
-            TrainTransform,
-            YoloBatchSampler,
             DataLoader,
             InfiniteSampler,
             MosaicDetection,
-            worker_init_reset_seed,
+            TrainTransform,
+            YoloBatchSampler,
+            worker_init_reset_seed
         )
         from yolox.utils import wait_for_the_master
 

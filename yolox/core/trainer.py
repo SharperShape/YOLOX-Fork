@@ -3,6 +3,8 @@
 
 from loguru import logger
 
+from pycocotools.coco import COCO
+
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.tensorboard import SummaryWriter
@@ -61,6 +63,10 @@ class Trainer:
         # metric record
         self.meter = MeterBuffer(window_size=exp.print_interval)
         self.file_name = os.path.join(exp.output_dir, args.experiment_name)
+        
+        # Get class names
+        coco = COCO(self.exp.train_ann)
+        self.class_names = [cat["name"] for cat in coco.cats.values()]
 
         if self.rank == 0:
             os.makedirs(self.file_name, exist_ok=True)
@@ -385,6 +391,7 @@ class Trainer:
                 "optimizer": self.optimizer.state_dict(),
                 "best_ap": self.best_ap,
                 "curr_ap": ap,
+                "class_names": self.class_names,
             }
             save_checkpoint(
                 ckpt_state,
