@@ -65,7 +65,7 @@ class Trainer:
         self.file_name = os.path.join(exp.output_dir, args.experiment_name)
         
         # Get class names
-        coco = COCO(self.exp.train_ann)
+        coco = COCO(f"{self.exp.data_dir}/annotations/{self.exp.train_ann}")
         self.class_names = [cat["name"] for cat in coco.cats.values()]
 
         if self.rank == 0:
