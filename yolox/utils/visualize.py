@@ -8,12 +8,14 @@ import numpy as np
 __all__ = ["vis"]
 
 
-def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None):
+def vis(img, boxes, scores, cls_ids, conf=0.5, class_names=None, class_threshold=None):
 
     for i in range(len(boxes)):
         box = boxes[i]
         cls_id = int(cls_ids[i])
         score = scores[i]
+        if class_threshold and class_threshold[cls_id] >= score:
+            continue
         if score < conf:
             continue
         x0 = int(box[0])
